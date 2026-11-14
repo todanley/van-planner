@@ -97,6 +97,12 @@ details.card[open]>summary{margin-bottom:8px}
 .prhead .c-vol,.prhead .c-pr{text-align:right}
 .mman{flex:1;min-width:0}.mdims{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:4px}
 .mdims label{font-size:11.5px}
+.mtop{display:flex;align-items:center;gap:6px}.mtop input{flex:1;min-width:0}
+.tag{flex:none;font-size:11px;border-radius:10px;padding:1px 7px;white-space:nowrap}
+.dsum{display:block;color:var(--muted);font-size:12px;margin-top:3px}.tag.po{background:#fff3dc;color:#7a4b00}
+.prrow .tovan{margin-top:5px;font-size:12.5px}
+.prrow .sw{align-self:flex-start;margin-top:10px}
+button.linkish{background:none;border:none;color:var(--brand);text-decoration:underline;padding:4px 2px;font-size:13px;min-height:0}
 .ml{display:none}
 .allkm{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:13px;color:var(--muted)}
 .allkm label{display:inline;white-space:nowrap}.allkm input{width:80px}
@@ -203,7 +209,8 @@ details.card[open]>summary{margin-bottom:8px}
       <div class="prhead prrow"><div class="c-nm">Item</div><div class="c-vol">Volume</div><div class="c-qty">How many</div><div class="c-km">Distance (km)</div><div class="c-pr">Price</div><div class="c-del"></div></div>
       <div id="prRows"></div>
       <div class="row">
-        <button id="pAddMan">＋ Add an item not in the van drawing</button>
+        <button id="pAddVan" class="primary">＋ Add item (also places it in the van)</button>
+        <button id="pAddMan" class="linkish" title="For things you charge for but don't carry in the van">or add a price-only item (not in van)</button>
         <span class="allkm"><label for="pAllKm">Same distance for all</label><input id="pAllKm" type="number" inputmode="decimal" step="any" min="0" placeholder="km"><button id="pAllKmBtn">Apply</button></span>
       </div>
       <div id="prTotals"></div>
@@ -327,7 +334,7 @@ details.card[open]>summary{margin-bottom:8px}
         <li><b>Space left</b> shows the free floor area (not counting the wheel arches) and the free space inside the van. Red notes warn if something hits a wheel arch, goes through a wall, is too tall or overlaps another item. Tap a note to select that item.</li>
         <li><b>Saving:</b> everything saves automatically on this device. Use <b>Saved layouts</b> to keep different versions, or export a file to back it up.</li>
         <li><b>Picture / print:</b> <b>Save picture</b> downloads a PNG of both views and your item list. <b>Print</b> lets you print or save as PDF.</li>
-        <li><b>Pricing:</b> under the drawings (or press <b>💲 Pricing</b>). Type your rates once – base fee, $ per m³, $ per km, and optionally handling per item, a minimum job price and GST. Every item in the van is listed with its volume. Put in the distance (km) and how many for each one (0 leaves it out). Add extra items that aren't in the drawing with their size. The price for each item and the job total update as you type. <b>Copy quote</b> gives you text to paste into a message. <b>Print / save quote as PDF</b> prints a clean quote.</li>
+        <li><b>Pricing:</b> under the drawings (or press <b>💲 Pricing</b>). Type your rates once – base fee, $ per m³, $ per km, and optionally handling per item, a minimum job price and GST. Every item in the van is listed with its volume. Put in the distance (km) and how many for each one (0 leaves it out). You can type an item's name and size right in its pricing row and the van drawing changes too. <b>+ Add item</b> in the pricing card puts a new item in the van and the price list at the same time (✕ removes it from both; Undo brings it back). Older price-only rows have a <b>Put in van</b> button. For things you charge for but don't carry, use <b>price-only item</b>. The price for each item and the job total update as you type. <b>Copy quote</b> gives you text to paste into a message. <b>Print / save quote as PDF</b> prints a clean quote.</li>
         <li><b>Your van:</b> sizes are under <b>Van size &amp; wheel arches</b>. Measure the wheel arch height and put it in.</li>
         <li>Keyboard (computer): arrow keys nudge the selected item (hold Shift for 10×), <span class="kbd">R</span> rotate, <span class="kbd">D</span> duplicate, <span class="kbd">Delete</span> remove, <span class="kbd">Ctrl+Z</span> undo.</li>
       </ul>
@@ -973,6 +980,12 @@ function v3(x){return (Math.round(x*1000)/1000).toFixed(3);}
 function blankIfZero(n){return n?String(n):'';}
 
 var prSig='';
+function pricingSig(lines){return prefs.unit+'|'+lines.map(function(l){return l.kind+l.id+(l.kind==='van'?l.name+l.l+l.w+l.h+l.color:'');}).join(';');}
+function dimInputs(l,u){
+  return '<div class="mdims"><label>L ('+u+')<input data-k="l" type="number" inputmode="decimal" step="any" min="0" value="'+(l.l?toDisp(l.l):'')+'"></label>'+
+    '<label>W ('+u+')<input data-k="w" type="number" inputmode="decimal" step="any" min="0" value="'+(l.w?toDisp(l.w):'')+'"></label>'+
+    '<label>H ('+u+')<input data-k="h" type="number" inputmode="decimal" step="any" min="0" value="'+(l.h?toDisp(l.h):'')+'"></label></div>';
+}
 function renderPricing(force){
   if(!$('prRows'))return;
   var p=pricing(),r=p.rates;
@@ -980,26 +993,24 @@ function renderPricing(force){
   setVal('pHand',blankIfZero(r.handling));setVal('pMin',blankIfZero(r.minimum));$('pGst').checked=!!r.gst;
   setVal('pCust',p.customer||'');setVal('pBiz',prefs.biz||'');
   var lines=pricingLines();
-  var sig=prefs.unit+'|'+lines.map(function(l){return l.kind+l.id+(l.kind==='van'?l.name+l.l+l.w+l.h+l.color:'');}).join(';');
+  var sig=pricingSig(lines);
   if(force||sig!==prSig||!$('prRows').children.length){
     var ae=document.activeElement,keep=ae&&$('prRows').contains(ae)?{id:ae.closest('.prrow').dataset.id,k:ae.dataset.k}:null;
     prSig=sig;
     var u=prefs.unit;
     $('prRows').innerHTML=lines.length?lines.map(function(l){
       var nm;
-      if(l.kind==='van')nm='<span class="sw" style="background:'+l.color+'"></span><span class="nm"><b>'+esc(l.name)+'</b><small>'+dimsTxt(l)+' \u00B7 in the van</small></span>';
-      else nm='<div class="mman"><input data-k="name" placeholder="Item name" maxlength="60" value="'+esc(l.name)+'" aria-label="Item name">'+
-        '<div class="mdims"><label>L ('+u+')<input data-k="l" type="number" inputmode="decimal" step="any" min="0" value="'+(l.l?toDisp(l.l):'')+'"></label>'+
-        '<label>W ('+u+')<input data-k="w" type="number" inputmode="decimal" step="any" min="0" value="'+(l.w?toDisp(l.w):'')+'"></label>'+
-        '<label>H ('+u+')<input data-k="h" type="number" inputmode="decimal" step="any" min="0" value="'+(l.h?toDisp(l.h):'')+'"></label></div></div>';
+      if(l.kind==='van')nm='<span class="sw" style="background:'+l.color+'" title="In the van"></span><div class="mman"><div class="mtop"><input data-k="name" placeholder="Item name" maxlength="60" value="'+esc(l.name)+'" aria-label="Item name"></div>'+dimInputs(l,u)+'<small class="dsum">'+dimsTxt(l)+' \u00B7 in the van</small></div>';
+      else nm='<div class="mman"><div class="mtop"><input data-k="name" placeholder="Item name" maxlength="60" value="'+esc(l.name)+'" aria-label="Item name"><span class="tag po">price only</span></div>'+dimInputs(l,u)+
+        '<button class="small tovan" data-act="tovan" title="Turn this into a real item in the van drawing">\u21AA Put in van</button></div>';
       return '<div class="prrow'+(l.kind==='man'?' man':'')+'" data-id="'+esc(l.id)+'" data-kind="'+l.kind+'">'+
         '<div class="c-nm">'+nm+'</div>'+
         '<div class="c-vol"><span class="ml">Volume</span><span class="pv"></span></div>'+
         '<label class="c-qty"><span class="ml">How many</span><input data-k="qty" type="number" inputmode="decimal" step="any" min="0" value="'+l.qty+'" aria-label="How many"></label>'+
         '<label class="c-km"><span class="ml">Distance (km)</span><input data-k="km" type="number" inputmode="decimal" step="any" min="0" placeholder="0" value="'+blankIfZero(l.km)+'" aria-label="Distance in km"></label>'+
         '<div class="c-pr"><span class="ml">Price</span><b class="pp"></b></div>'+
-        '<div class="c-del">'+(l.kind==='man'?'<button class="small danger" data-act="del" title="Remove this item" aria-label="Remove">\u2715</button>':'')+'</div></div>';
-    }).join(''):'<div class="empty">No items yet. Items you put in the van show up here, or press <b>Add an item not in the van drawing</b>.</div>';
+        '<div class="c-del"><button class="small danger" data-act="del" title="'+(l.kind==='van'?'Remove this item (also takes it out of the van)':'Remove this item')+'" aria-label="Remove">\u2715</button></div></div>';
+    }).join(''):'<div class="empty">No items yet. Items you put in the van show up here, or press <b>+ Add item</b> below \u2013 it goes into the van drawing too.</div>';
     if(keep){var row=$('prRows').querySelector('.prrow[data-id="'+keep.id+'"] [data-k="'+keep.k+'"]');if(row)row.focus();}
   }
   updatePricingNumbers();
@@ -1058,6 +1069,25 @@ function printQuote(){
   renderQuotePrint();document.body.classList.add('printQuote');
   setTimeout(function(){window.print();},60);
 }
+/* "+ Add item" in the pricing card: a real van item (same path as the planner's Add), auto-placed in a free spot */
+function addFromPricing(){
+  var n=1,names={};state.items.forEach(function(i){names[i.name]=1;});while(names['New item '+n])n++;
+  snapshot();var res=addItem('New item '+n,50,50,50);selectedId=res.item.id;renderLive();renderPricing(true);save();
+  toast(res.spot?'Added to the van and the price list \u2013 type its name and size.':'Added \u2013 no free floor space, so it\u2019s at the back. Drag it where you want it.');
+  var el=$('prRows').querySelector('.prrow[data-id="'+res.item.id+'"] [data-k="name"]');if(el){el.focus();try{el.select();}catch(e){}}
+  return res.item;
+}
+/* older price-only rows -> real van item, keeping name, size, how many and distance */
+function manualToVan(id){
+  var p=pricing(),m=null,i;for(i=0;i<p.manual.length;i++)if(p.manual[i].id===id){m=p.manual[i];break;}
+  if(!m)return null;
+  if(!(m.l>0&&m.w>0&&m.h>0)){toast('Type the length, width and height first.');return null;}
+  snapshot();var res=addItem(m.name||'Item',m.l,m.w,m.h);
+  p.rows[res.item.id]={km:m.km,qty:m.qty};p.manual.splice(i,1);selectedId=res.item.id;
+  renderLive();renderPricing(true);save();
+  toast(res.spot?'\u201c'+res.item.name+'\u201d is now in the van.'+(res.spot.rotated?' (Turned sideways so it fits.)':''):'Put at the back \u2013 no free floor space. Drag it where you want it.');
+  return res.item;
+}
 function wirePricing(){
   var rateMap={pBase:'base',pM3:'perM3',pKm:'perKm',pHand:'handling',pMin:'minimum'},card=$('priceCard'),snapped=false;
   function once(){if(!snapped){snapshot();snapped=true;}}
@@ -1070,16 +1100,30 @@ function wirePricing(){
   $('pCust').addEventListener('input',function(){once();pricing().customer=this.value.slice(0,80);save();});
   $('pBiz').addEventListener('input',function(){prefs.biz=this.value.slice(0,80);save();});
   $('prRows').addEventListener('input',function(e){var el=e.target,k=el.dataset.k,row=el.closest('.prrow');if(!k||!row)return;
-    var p=pricing(),id=row.dataset.id,obj;
-    if(row.dataset.kind==='van'){obj=p.rows[id]||(p.rows[id]={km:0,qty:1});}
+    var p=pricing(),id=row.dataset.id,obj,it=null;
+    if(row.dataset.kind==='van'){it=getItem(id);if(!it)return;obj=(k==='name'||k==='l'||k==='w'||k==='h')?it:(p.rows[id]||(p.rows[id]={km:0,qty:1}));}
     else{for(var i=0;i<p.manual.length;i++)if(p.manual[i].id===id)obj=p.manual[i];if(!obj)return;}
-    if(k==='name'){once();obj.name=el.value.slice(0,60);save();return;}
+    if(k==='name'){once();obj.name=el.value.slice(0,60);if(it){if(!it.name.trim())it.name='Item';vanEdited();}else save();return;}
     var v=el.value.trim()===''?0:num(el.value,NaN);if(!isFinite(v))return;v=v>0?v:0;
+    if(it&&obj===it&&!(v>0))return;/* a van item always needs a size; the old size stays until a real number is typed */
     once();
     if(k==='l'||k==='w'||k==='h')obj[k]=fromDisp(v);else obj[k]=v;
+    if(it&&obj===it){if(prefs.autoStack&&!it.fixedZ)it.z=restHeight(it,{});vanEdited();return;}
     updatePricingNumbers();save();});
-  $('prRows').addEventListener('click',function(e){var b=e.target.closest('button[data-act="del"]');if(!b)return;var id=b.closest('.prrow').dataset.id;
-    snapshot();pricing().manual=pricing().manual.filter(function(m){return m.id!==id;});renderPricing(true);save();});
+  /* van-item edits made in the pricing row: redraw the van, items list and editor, keep the row (and the caret) as it is */
+  function vanEdited(){renderViews();renderStats();renderList();renderEditor();
+    state.items.forEach(function(it){var sm=$('prRows').querySelector('.prrow[data-id="'+it.id+'"] .dsum');if(sm)sm.textContent=dimsTxt(it)+' \u00B7 in the van';});
+    prSig=pricingSig(pricingLines());updatePricingNumbers();save();}
+  $('prRows').addEventListener('focusout',function(e){var el=e.target,k=el.dataset&&el.dataset.k,row=el.closest&&el.closest('.prrow');
+    if(!row||row.dataset.kind!=='van')return;var it=getItem(row.dataset.id);if(!it)return;
+    if(k==='l'||k==='w'||k==='h'){var v=num(el.value,NaN);if(!(v>0))el.value=toDisp(it[k]);}
+    if(k==='name'&&!el.value.trim())el.value=it.name;});
+  $('prRows').addEventListener('click',function(e){var b=e.target.closest('button[data-act]');if(!b)return;var row=b.closest('.prrow'),id=row.dataset.id,p=pricing();
+    if(b.dataset.act==='del'){
+      if(row.dataset.kind==='van'){var it=getItem(id);if(it)deleteItem(it);renderPricing(true);return;}
+      snapshot();p.manual=p.manual.filter(function(m){return m.id!==id;});renderPricing(true);save();toast('Removed \u2013 press Undo to bring it back.');return;}
+    if(b.dataset.act==='tovan')manualToVan(id);});
+  $('pAddVan').addEventListener('click',addFromPricing);
   $('pAddMan').addEventListener('click',function(){snapshot();var m={id:uid(),name:'',l:0,w:0,h:0,km:0,qty:1};pricing().manual.push(m);renderPricing(true);save();
     var el=$('prRows').querySelector('.prrow[data-id="'+m.id+'"] [data-k="name"]');if(el){el.focus();}});
   $('pAllKmBtn').addEventListener('click',function(){var v=num($('pAllKm').value,NaN);if(!isFinite(v)||v<0){toast('Type a distance in km first.');return;}

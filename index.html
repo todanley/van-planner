@@ -82,7 +82,41 @@ details.card[open]>summary{margin-bottom:8px}
 #toast.show{opacity:.95}
 .sel-none{color:var(--muted);font-size:14px}
 .kbd{font-family:ui-monospace,Menlo,Consolas,monospace;background:#eef2f6;border:1px solid #d5dde5;border-radius:4px;padding:0 4px;font-size:12px}
+#priceCard h2{flex-wrap:wrap}
+.rates{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.rates label.gst{display:flex;align-items:center;align-self:end;min-height:36px;color:var(--ink);font-size:14px}
+.prrow{display:grid;grid-template-columns:minmax(0,1fr) 84px 76px 96px 100px 34px;gap:8px;align-items:center;padding:7px 4px;border-bottom:1px solid var(--line)}
+.prhead{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:10px;border-bottom:2px solid var(--line);padding-bottom:4px}
+.prrow .c-nm{display:flex;align-items:center;gap:8px;min-width:0}
+.prrow .sw{width:14px;height:14px;border-radius:4px;flex:none;border:1px solid rgba(0,0,0,.2)}
+.prrow .nm{min-width:0}.prrow .nm b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.prrow .nm small{color:var(--muted);font-size:12px}
+.prrow input{min-height:34px;padding:4px 7px}
+.prrow .c-vol{font-size:13.5px;color:var(--muted);text-align:right}
+.prrow .c-pr{text-align:right}.prrow .pp{font-size:15px}
+.prrow.zero{opacity:.5}
+.prhead .c-vol,.prhead .c-pr{text-align:right}
+.mman{flex:1;min-width:0}.mdims{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin-top:4px}
+.mdims label{font-size:11.5px}
+.ml{display:none}
+.allkm{display:inline-flex;align-items:center;gap:6px;margin-left:auto;font-size:13px;color:var(--muted)}
+.allkm label{display:inline;white-space:nowrap}.allkm input{width:80px}
+#prTotals{margin-top:10px;border-top:2px solid var(--line);padding-top:6px}
+.trow{display:flex;justify-content:space-between;gap:10px;padding:3px 4px;font-size:14.5px}
+.trow.minr{color:var(--amber)}
+.trow.grand{font-size:19px;border-top:1px solid var(--line);margin-top:4px;padding-top:7px;color:var(--brand2)}
+#quotePrint{display:none}
 @media (max-width:980px){.app{grid-template-columns:1fr;padding:10px;gap:10px}.items{max-height:none}header .lname{display:none}}
+@media (max-width:980px){.app{gap:0}.views,.panel{display:contents}.views>.card{order:1}#statsCard{order:2}#addCard{order:3}#editCard{order:4}#listCard{order:5}#priceCard{order:6}#layoutsCard{order:7}#vanCard{order:8}#helpCard{order:9}}
+@media (max-width:680px){
+  .rates{grid-template-columns:1fr 1fr}
+  .prhead{display:none}
+  .prrow{grid-template-columns:repeat(4,minmax(0,1fr));grid-template-areas:"nm nm nm del" "vol qty km pr";row-gap:4px;padding:9px 2px}
+  .prrow .c-nm{grid-area:nm}.prrow .c-vol{grid-area:vol;text-align:left}.prrow .c-qty{grid-area:qty}.prrow .c-km{grid-area:km}.prrow .c-pr{grid-area:pr}.prrow .c-del{grid-area:del;text-align:right}
+  .ml{display:block;font-size:11.5px;color:var(--muted);font-weight:400}
+  .prrow .c-vol .pv{display:block;min-height:34px;line-height:34px;color:var(--ink)}
+  .prrow .c-pr .pp{display:block;min-height:34px;line-height:34px}
+  .allkm{margin-left:0}
+}
 @media (max-width:520px){header h1{font-size:16px}header button{padding:5px 8px;font-size:13px}.card{padding:10px}}
 @media print{
   svg.view{width:100%!important}
@@ -94,6 +128,20 @@ details.card[open]>summary{margin-bottom:8px}
   .card{break-inside:avoid;box-shadow:none;border-color:#bbb}
   .items{max-height:none}
   .it button{display:none}
+  #quotePrint{display:none!important}
+  body.printQuote>*:not(#quotePrint){display:none!important}
+  body.printQuote #quotePrint{display:block!important;color:#000;font-size:12pt}
+  #quotePrint .qh{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:10px}
+  #quotePrint h1{font-size:22pt;margin:0}
+  #quotePrint .qh div{text-align:right}
+  #quotePrint table{width:100%;border-collapse:collapse;margin-top:8px}
+  #quotePrint th,#quotePrint td{border-bottom:1px solid #999;padding:5px 6px;text-align:left;vertical-align:top}
+  #quotePrint th{border-bottom:2px solid #000;font-size:10.5pt}
+  #quotePrint .r{text-align:right;white-space:nowrap}
+  #quotePrint tfoot td{border-bottom:0;padding:3px 6px}
+  #quotePrint tfoot tr:first-child td{border-top:2px solid #000;padding-top:7px}
+  #quotePrint tr.grand td{font-weight:700;font-size:14pt;border-top:2px solid #000;padding-top:6px}
+  #quotePrint .qf{color:#444;font-size:10pt}
 }
 </style>
 </head>
@@ -105,6 +153,7 @@ details.card[open]>summary{margin-bottom:8px}
     <span class="seg" id="unitSeg" title="Units"><button data-u="cm">cm</button><button data-u="mm">mm</button></span>
     <button id="btnUndo" title="Undo (Ctrl+Z)">↶ Undo</button>
     <button id="btnRedo" title="Redo (Ctrl+Y)">↷ Redo</button>
+    <button id="btnPricing" title="Pricing calculator">💲 Pricing</button>
     <button id="btnPng" title="Save a picture of the top and side views">🖼 Save picture</button>
     <button id="btnPrint" title="Print or save as PDF">🖨 Print</button>
     <button id="btnHelp" title="How to use">❓ Help</button>
@@ -134,6 +183,34 @@ details.card[open]>summary{margin-bottom:8px}
         <span class="muted" id="elevSub"></span>
       </div>
       <div class="vwrap" id="wrapSide"><svg class="view" id="svgSide" aria-label="Side view of van"></svg></div>
+    </div>
+
+    <div class="card noprint" id="priceCard">
+      <h2>💲 Pricing calculator <small>put in your rates and the distance for each item</small></h2>
+      <div class="rates">
+        <label>Base / call-out fee ($)<input id="pBase" type="number" inputmode="decimal" step="any" min="0" placeholder="e.g. 40"></label>
+        <label>Rate per m³ ($)<input id="pM3" type="number" inputmode="decimal" step="any" min="0" placeholder="e.g. 30"></label>
+        <label>Rate per km ($)<input id="pKm" type="number" inputmode="decimal" step="any" min="0" placeholder="e.g. 1.50"></label>
+        <label>Handling per item ($)<input id="pHand" type="number" inputmode="decimal" step="any" min="0" placeholder="optional"></label>
+        <label>Minimum job price ($)<input id="pMin" type="number" inputmode="decimal" step="any" min="0" placeholder="optional"></label>
+        <label class="gst"><input type="checkbox" id="pGst">Add GST (10%)</label>
+      </div>
+      <div class="muted" style="margin-top:6px">Each item = how many × (volume × $ per m³ + distance × $ per km + handling). Job total = base fee + all items, or the minimum job price if that's more. Your rates are remembered on this device and saved with each layout.</div>
+      <div class="grid2" style="margin-top:8px">
+        <label>Quote for (customer / job, optional)<input id="pCust" maxlength="80" placeholder="e.g. J. Smith – Parramatta to Penrith"></label>
+        <label>Your business name (optional)<input id="pBiz" maxlength="80" placeholder="shows at the top of the quote"></label>
+      </div>
+      <div class="prhead prrow"><div class="c-nm">Item</div><div class="c-vol">Volume</div><div class="c-qty">How many</div><div class="c-km">Distance (km)</div><div class="c-pr">Price</div><div class="c-del"></div></div>
+      <div id="prRows"></div>
+      <div class="row">
+        <button id="pAddMan">＋ Add an item not in the van drawing</button>
+        <span class="allkm"><label for="pAllKm">Same distance for all</label><input id="pAllKm" type="number" inputmode="decimal" step="any" min="0" placeholder="km"><button id="pAllKmBtn">Apply</button></span>
+      </div>
+      <div id="prTotals"></div>
+      <div class="row">
+        <button class="primary" id="pCopy">📋 Copy quote</button>
+        <button id="pPrint">🖨 Print / save quote as PDF</button>
+      </div>
     </div>
   </section>
 
@@ -250,6 +327,7 @@ details.card[open]>summary{margin-bottom:8px}
         <li><b>Space left</b> shows the free floor area (not counting the wheel arches) and the free space inside the van. Red notes warn if something hits a wheel arch, goes through a wall, is too tall or overlaps another item. Tap a note to select that item.</li>
         <li><b>Saving:</b> everything saves automatically on this device. Use <b>Saved layouts</b> to keep different versions, or export a file to back it up.</li>
         <li><b>Picture / print:</b> <b>Save picture</b> downloads a PNG of both views and your item list. <b>Print</b> lets you print or save as PDF.</li>
+        <li><b>Pricing:</b> under the drawings (or press <b>💲 Pricing</b>). Type your rates once – base fee, $ per m³, $ per km, and optionally handling per item, a minimum job price and GST. Every item in the van is listed with its volume. Put in the distance (km) and how many for each one (0 leaves it out). Add extra items that aren't in the drawing with their size. The price for each item and the job total update as you type. <b>Copy quote</b> gives you text to paste into a message. <b>Print / save quote as PDF</b> prints a clean quote.</li>
         <li><b>Your van:</b> sizes are under <b>Van size &amp; wheel arches</b>. Measure the wheel arch height and put it in.</li>
         <li>Keyboard (computer): arrow keys nudge the selected item (hold Shift for 10×), <span class="kbd">R</span> rotate, <span class="kbd">D</span> duplicate, <span class="kbd">Delete</span> remove, <span class="kbd">Ctrl+Z</span> undo.</li>
       </ul>
@@ -257,6 +335,7 @@ details.card[open]>summary{margin-bottom:8px}
     </details>
   </aside>
 </main>
+<div id="quotePrint" aria-hidden="true"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <script>
 (function(){
@@ -289,8 +368,8 @@ function fmt(cm){return toDisp(cm)+' '+prefs.unit;}
 function fmtDims(it){return toDisp(it.l)+' × '+toDisp(it.w)+' × '+toDisp(it.h)+' '+prefs.unit;}
 
 /* ---------- state ---------- */
-function blankState(van){return {name:'My van layout',van:clone(van||DEFAULT_VAN),items:[]};}
-function defaultPrefs(){return {unit:'cm',snap:5,edges:true,keepInside:true,autoStack:true,grid:true,elev:'side',zoom:1};}
+function blankState(van){return {name:'My van layout',van:clone(van||DEFAULT_VAN),items:[],pricing:defaultPricing()};}
+function defaultPrefs(){return {unit:'cm',snap:5,edges:true,keepInside:true,autoStack:true,grid:true,elev:'side',zoom:1,rates:null,biz:''};}
 function sanitizeItem(o,i){
   return {id:(o&&typeof o.id==='string'&&o.id)?o.id.slice(0,40):uid(),name:String((o&&o.name)||'Item').slice(0,60),
     l:Math.max(0.1,num(o&&o.l,50)),w:Math.max(0.1,num(o&&o.w,50)),h:Math.max(0.1,num(o&&o.h,50)),
@@ -306,6 +385,7 @@ function sanitizeState(s){
   if(out.van.archGap>out.van.width)out.van.archGap=out.van.width;
   var items=Array.isArray(s.items)?s.items:[],seen={};
   out.items=items.slice(0,500).map(function(o,i){var it=sanitizeItem(o,i);if(seen[it.id])it.id=uid();seen[it.id]=1;return it;});
+  out.pricing=sanitizePricing(s.pricing,out.items);
   return out;
 }
 function load(){
@@ -321,6 +401,8 @@ function load(){
   if(prefs.unit!=='mm')prefs.unit='cm';
   prefs.snap=[0,1,5,10].indexOf(+prefs.snap)>=0?+prefs.snap:5;
   if(prefs.elev!=='end')prefs.elev='side';
+  prefs.rates=prefs.rates?sanitizeRates(prefs.rates):null;prefs.biz=String(prefs.biz||'').slice(0,80);
+  if(state.pricing&&!state.pricing.rates)state.pricing.rates=sanitizeRates(prefs.rates);
   prefs.zoom=[1,1.5,2,3].indexOf(+prefs.zoom)>=0?+prefs.zoom:1;
 }
 function saveNow(){
@@ -704,8 +786,8 @@ function renderPrefs(){
   $('svgTop').style.width=$('svgSide').style.width=(prefs.zoom*100)+'%';$('zVal').textContent=Math.round(prefs.zoom*100)+'%';
   $('zOut').disabled=prefs.zoom<=1;$('zIn').disabled=prefs.zoom>=3;
 }
-function renderAll(){renderPrefs();renderViews();renderStats();renderList();renderEditor();renderVan();renderLayouts();updateUndoBtns();}
-function renderLive(){renderViews();renderStats();renderList();renderEditor();}
+function renderAll(){renderPrefs();renderViews();renderStats();renderList();renderEditor();renderVan();renderLayouts();renderPricing(true);updateUndoBtns();}
+function renderLive(){renderViews();renderStats();renderList();renderEditor();renderPricing();}
 function scheduleLive(){if(rafPending)return;rafPending=true;requestAnimationFrame(function(){rafPending=false;renderLive();});}
 
 /* ---------- actions ---------- */
@@ -843,6 +925,173 @@ function wireSvg(svg,modeFn){
   svg.addEventListener('touchmove',function(e){if(e.touches.length===1)e.preventDefault();},{passive:false});
 }
 
+/* ---------- pricing calculator ---------- */
+/* Per item: qty x (volume m3 x $/m3 + distance km x $/km + handling $)
+   Job: max(minimum, base fee + sum of items), then + 10% GST if ticked. */
+var RATE_KEYS=['base','perM3','perKm','handling','minimum'];
+function zeroRates(){return {base:0,perM3:0,perKm:0,handling:0,minimum:0,gst:false};}
+function sanitizeRates(r){var o=zeroRates();if(r&&typeof r==='object'){RATE_KEYS.forEach(function(k){var n=num(r[k],0);o[k]=n>0?n:0;});o.gst=!!r.gst;}return o;}
+function defaultPricing(){return {rates:sanitizeRates(typeof prefs==='object'&&prefs?prefs.rates:null),rows:{},manual:[],customer:''};}
+function nn(v,d){var n=num(v,d);return n>0?n:0;}
+function sanitizePricing(p,items){
+  var out=defaultPricing();if(!p||typeof p!=='object')return out;
+  if(p.rates)out.rates=sanitizeRates(p.rates);
+  var ids={};(items||[]).forEach(function(it){ids[it.id]=1;});
+  if(p.rows&&typeof p.rows==='object')Object.keys(p.rows).forEach(function(id){if(!ids[id])return;var r=p.rows[id]||{};
+    out.rows[id]={km:nn(r.km,0),qty:nn(r.qty,1)};});
+  if(Array.isArray(p.manual))out.manual=p.manual.slice(0,300).map(function(m){m=m||{};
+    return {id:(typeof m.id==='string'&&m.id)?m.id.slice(0,40):uid(),name:String(m.name||'').slice(0,60),
+      l:nn(m.l,0),w:nn(m.w,0),h:nn(m.h,0),km:nn(m.km,0),qty:nn(m.qty,1)};});
+  out.customer=String(p.customer||'').slice(0,80);
+  return out;
+}
+function pricing(){if(!state.pricing)state.pricing=defaultPricing();return state.pricing;}
+function cents(x){return Math.round((x+(x>=0?1e-9:-1e-9))*100)/100;}
+function money(x){return '$'+(+x||0).toLocaleString('en-AU',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function volM3(o){return (o.l*o.w*o.h)/1e6;}/* sizes are stored in cm */
+/* pure maths (exposed for tests) */
+function priceItem(vol,km,qty,r){return cents(qty*(vol*r.perM3+km*r.perKm+r.handling));}
+function calcQuote(lines,r){
+  r=sanitizeRates(r);
+  var prices=lines.map(function(l){return priceItem(nn(l.vol,0),nn(l.km,0),nn(l.qty,0),r);});
+  var items=cents(prices.reduce(function(a,b){return a+b;},0));
+  var job=cents(r.base+items),minApplied=r.minimum>job+1e-9,sub=minApplied?cents(r.minimum):job;
+  var gst=r.gst?cents(sub*0.1):0;
+  var vol=lines.reduce(function(a,l){return a+nn(l.vol,0)*nn(l.qty,0);},0);
+  return {prices:prices,items:items,base:r.base,job:job,minimum:r.minimum,minApplied:minApplied,subtotal:sub,gst:gst,total:cents(sub+gst),gstOn:r.gst,volume:vol};
+}
+function pricingLines(){
+  var p=pricing(),out=[];
+  state.items.forEach(function(it){var r=p.rows[it.id]||{km:0,qty:1};
+    out.push({kind:'van',id:it.id,name:it.name,l:it.l,w:it.w,h:it.h,vol:volM3(it),km:r.km,qty:r.qty,color:it.color});});
+  p.manual.forEach(function(m){out.push({kind:'man',id:m.id,name:m.name,l:m.l,w:m.w,h:m.h,vol:volM3(m),km:m.km,qty:m.qty});});
+  return out;
+}
+function quoteNow(){var lines=pricingLines();return {lines:lines,q:calcQuote(lines,pricing().rates)};}
+function dimsTxt(o){return toDisp(o.l)+' \u00D7 '+toDisp(o.w)+' \u00D7 '+toDisp(o.h)+' '+prefs.unit;}
+function v3(x){return (Math.round(x*1000)/1000).toFixed(3);}
+function blankIfZero(n){return n?String(n):'';}
+
+var prSig='';
+function renderPricing(force){
+  if(!$('prRows'))return;
+  var p=pricing(),r=p.rates;
+  setVal('pBase',blankIfZero(r.base));setVal('pM3',blankIfZero(r.perM3));setVal('pKm',blankIfZero(r.perKm));
+  setVal('pHand',blankIfZero(r.handling));setVal('pMin',blankIfZero(r.minimum));$('pGst').checked=!!r.gst;
+  setVal('pCust',p.customer||'');setVal('pBiz',prefs.biz||'');
+  var lines=pricingLines();
+  var sig=prefs.unit+'|'+lines.map(function(l){return l.kind+l.id+(l.kind==='van'?l.name+l.l+l.w+l.h+l.color:'');}).join(';');
+  if(force||sig!==prSig||!$('prRows').children.length){
+    var ae=document.activeElement,keep=ae&&$('prRows').contains(ae)?{id:ae.closest('.prrow').dataset.id,k:ae.dataset.k}:null;
+    prSig=sig;
+    var u=prefs.unit;
+    $('prRows').innerHTML=lines.length?lines.map(function(l){
+      var nm;
+      if(l.kind==='van')nm='<span class="sw" style="background:'+l.color+'"></span><span class="nm"><b>'+esc(l.name)+'</b><small>'+dimsTxt(l)+' \u00B7 in the van</small></span>';
+      else nm='<div class="mman"><input data-k="name" placeholder="Item name" maxlength="60" value="'+esc(l.name)+'" aria-label="Item name">'+
+        '<div class="mdims"><label>L ('+u+')<input data-k="l" type="number" inputmode="decimal" step="any" min="0" value="'+(l.l?toDisp(l.l):'')+'"></label>'+
+        '<label>W ('+u+')<input data-k="w" type="number" inputmode="decimal" step="any" min="0" value="'+(l.w?toDisp(l.w):'')+'"></label>'+
+        '<label>H ('+u+')<input data-k="h" type="number" inputmode="decimal" step="any" min="0" value="'+(l.h?toDisp(l.h):'')+'"></label></div></div>';
+      return '<div class="prrow'+(l.kind==='man'?' man':'')+'" data-id="'+esc(l.id)+'" data-kind="'+l.kind+'">'+
+        '<div class="c-nm">'+nm+'</div>'+
+        '<div class="c-vol"><span class="ml">Volume</span><span class="pv"></span></div>'+
+        '<label class="c-qty"><span class="ml">How many</span><input data-k="qty" type="number" inputmode="decimal" step="any" min="0" value="'+l.qty+'" aria-label="How many"></label>'+
+        '<label class="c-km"><span class="ml">Distance (km)</span><input data-k="km" type="number" inputmode="decimal" step="any" min="0" placeholder="0" value="'+blankIfZero(l.km)+'" aria-label="Distance in km"></label>'+
+        '<div class="c-pr"><span class="ml">Price</span><b class="pp"></b></div>'+
+        '<div class="c-del">'+(l.kind==='man'?'<button class="small danger" data-act="del" title="Remove this item" aria-label="Remove">\u2715</button>':'')+'</div></div>';
+    }).join(''):'<div class="empty">No items yet. Items you put in the van show up here, or press <b>Add an item not in the van drawing</b>.</div>';
+    if(keep){var row=$('prRows').querySelector('.prrow[data-id="'+keep.id+'"] [data-k="'+keep.k+'"]');if(row)row.focus();}
+  }
+  updatePricingNumbers();
+}
+function updatePricingNumbers(){
+  var d=quoteNow(),q=d.q,r=pricing().rates;
+  d.lines.forEach(function(l,i){var row=$('prRows').querySelector('.prrow[data-id="'+l.id+'"]');if(!row)return;
+    row.querySelector('.pv').textContent=v3(l.vol)+' m\u00B3';row.querySelector('.pp').textContent=money(q.prices[i]);
+    row.classList.toggle('zero',!(l.qty>0));});
+  var h='<div class="trow"><span>Items ('+d.lines.filter(function(l){return l.qty>0;}).length+', '+v3(q.volume)+' m\u00B3 total)</span><b>'+money(q.items)+'</b></div>'+
+    '<div class="trow"><span>Base / call-out fee</span><b>'+money(q.base)+'</b></div>';
+  if(q.minApplied)h+='<div class="trow minr"><span>Minimum job price applies (items + base = '+money(q.job)+')</span><b>'+money(q.minimum)+'</b></div>';
+  if(q.gstOn)h+='<div class="trow"><span>Subtotal (ex GST)</span><b>'+money(q.subtotal)+'</b></div><div class="trow"><span>GST 10%</span><b>'+money(q.gst)+'</b></div>';
+  h+='<div class="trow grand"><span>Job total'+(q.gstOn?' (inc GST)':'')+'</span><b id="pTotal">'+money(q.total)+'</b></div>';
+  if(!(r.base||r.perM3||r.perKm||r.handling||r.minimum))h+='<div class="note">Type your own rates above \u2013 they all start at $0.</div>';
+  $('prTotals').innerHTML=h;
+}
+function quoteText(){
+  var d=quoteNow(),q=d.q,p=pricing(),L=[];
+  L.push('QUOTE'+(prefs.biz?' \u2013 '+prefs.biz:''));
+  L.push('Date: '+new Date().toLocaleDateString('en-AU'));
+  if(p.customer)L.push('For: '+p.customer);
+  L.push('');L.push('Items:');
+  var n=0;d.lines.forEach(function(l,i){if(!(l.qty>0))return;n++;
+    L.push(n+'. '+(l.name||'Item')+(l.l&&l.w&&l.h?' \u2013 '+dimsTxt(l):'')+' ('+v3(l.vol)+' m\u00B3)'+(l.qty!==1?' \u00D7 '+l.qty:'')+(l.km?', '+l.km+' km':'')+' \u2013 '+money(q.prices[i]));});
+  if(!n)L.push('(no items)');
+  L.push('');L.push('Total volume: '+v3(q.volume)+' m\u00B3');
+  L.push('Items: '+money(q.items));
+  L.push('Base / call-out fee: '+money(q.base));
+  if(q.minApplied)L.push('Minimum job price applies: '+money(q.minimum));
+  if(q.gstOn){L.push('Subtotal (ex GST): '+money(q.subtotal));L.push('GST 10%: '+money(q.gst));}
+  L.push('TOTAL'+(q.gstOn?' (inc GST)':'')+': '+money(q.total));
+  return L.join('\n');
+}
+function renderQuotePrint(){
+  var d=quoteNow(),q=d.q,p=pricing();
+  var rows=d.lines.filter(function(l){return l.qty>0;}).map(function(l){var i=d.lines.indexOf(l);
+    return '<tr><td>'+esc(l.name||'Item')+'</td><td>'+(l.l&&l.w&&l.h?dimsTxt(l):'')+'</td><td class="r">'+v3(l.vol)+'</td><td class="r">'+l.qty+'</td><td class="r">'+(l.km||0)+'</td><td class="r">'+money(q.prices[i])+'</td></tr>';}).join('');
+  var t='<tr><td colspan="5">Items</td><td class="r">'+money(q.items)+'</td></tr><tr><td colspan="5">Base / call-out fee</td><td class="r">'+money(q.base)+'</td></tr>';
+  if(q.minApplied)t+='<tr><td colspan="5">Minimum job price applies</td><td class="r">'+money(q.minimum)+'</td></tr>';
+  if(q.gstOn)t+='<tr><td colspan="5">Subtotal (ex GST)</td><td class="r">'+money(q.subtotal)+'</td></tr><tr><td colspan="5">GST 10%</td><td class="r">'+money(q.gst)+'</td></tr>';
+  t+='<tr class="grand"><td colspan="5">Total'+(q.gstOn?' (inc GST)':'')+'</td><td class="r">'+money(q.total)+'</td></tr>';
+  $('quotePrint').innerHTML='<div class="qh"><h1>'+(prefs.biz?esc(prefs.biz):'Quote')+'</h1><div>'+(prefs.biz?'<b>Quote</b><br>':'')+'Date: '+new Date().toLocaleDateString('en-AU')+'</div></div>'+
+    (p.customer?'<p><b>For:</b> '+esc(p.customer)+'</p>':'')+
+    '<table><thead><tr><th>Item</th><th>Size (L \u00D7 W \u00D7 H)</th><th class="r">Volume m\u00B3</th><th class="r">Qty</th><th class="r">Distance km</th><th class="r">Price</th></tr></thead><tbody>'+
+    (rows||'<tr><td colspan="6">(no items)</td></tr>')+'</tbody><tfoot>'+t+'</tfoot></table>'+
+    '<p class="qf">Total volume: '+v3(q.volume)+' m\u00B3</p>';
+}
+function copyText(txt){
+  function fallback(){var ta=document.createElement('textarea');ta.value=txt;ta.setAttribute('readonly','');ta.style.position='fixed';ta.style.top='-1000px';document.body.appendChild(ta);ta.select();
+    var ok=false;try{ok=document.execCommand('copy');}catch(e){}ta.remove();return ok;}
+  if(navigator.clipboard&&window.isSecureContext)return navigator.clipboard.writeText(txt).then(function(){return true;},function(){return fallback();});
+  return Promise.resolve(fallback());
+}
+function printQuote(){
+  renderQuotePrint();document.body.classList.add('printQuote');
+  setTimeout(function(){window.print();},60);
+}
+function wirePricing(){
+  var rateMap={pBase:'base',pM3:'perM3',pKm:'perKm',pHand:'handling',pMin:'minimum'},card=$('priceCard'),snapped=false;
+  function once(){if(!snapped){snapshot();snapped=true;}}
+  card.addEventListener('focusin',function(){snapped=false;});
+  function ratesChanged(){prefs.rates=clone(pricing().rates);updatePricingNumbers();save();}
+  Object.keys(rateMap).forEach(function(id){$(id).addEventListener('input',function(){var v=this.value.trim()===''?0:num(this.value,NaN);if(!isFinite(v))return;
+    once();pricing().rates[rateMap[id]]=v>0?v:0;ratesChanged();});
+    $(id).addEventListener('blur',function(){renderPricing();});});
+  $('pGst').addEventListener('change',function(){snapped=false;once();pricing().rates.gst=this.checked;ratesChanged();});
+  $('pCust').addEventListener('input',function(){once();pricing().customer=this.value.slice(0,80);save();});
+  $('pBiz').addEventListener('input',function(){prefs.biz=this.value.slice(0,80);save();});
+  $('prRows').addEventListener('input',function(e){var el=e.target,k=el.dataset.k,row=el.closest('.prrow');if(!k||!row)return;
+    var p=pricing(),id=row.dataset.id,obj;
+    if(row.dataset.kind==='van'){obj=p.rows[id]||(p.rows[id]={km:0,qty:1});}
+    else{for(var i=0;i<p.manual.length;i++)if(p.manual[i].id===id)obj=p.manual[i];if(!obj)return;}
+    if(k==='name'){once();obj.name=el.value.slice(0,60);save();return;}
+    var v=el.value.trim()===''?0:num(el.value,NaN);if(!isFinite(v))return;v=v>0?v:0;
+    once();
+    if(k==='l'||k==='w'||k==='h')obj[k]=fromDisp(v);else obj[k]=v;
+    updatePricingNumbers();save();});
+  $('prRows').addEventListener('click',function(e){var b=e.target.closest('button[data-act="del"]');if(!b)return;var id=b.closest('.prrow').dataset.id;
+    snapshot();pricing().manual=pricing().manual.filter(function(m){return m.id!==id;});renderPricing(true);save();});
+  $('pAddMan').addEventListener('click',function(){snapshot();var m={id:uid(),name:'',l:0,w:0,h:0,km:0,qty:1};pricing().manual.push(m);renderPricing(true);save();
+    var el=$('prRows').querySelector('.prrow[data-id="'+m.id+'"] [data-k="name"]');if(el){el.focus();}});
+  $('pAllKmBtn').addEventListener('click',function(){var v=num($('pAllKm').value,NaN);if(!isFinite(v)||v<0){toast('Type a distance in km first.');return;}
+    snapshot();var p=pricing();state.items.forEach(function(it){var r=p.rows[it.id]||(p.rows[it.id]={km:0,qty:1});r.km=v;});p.manual.forEach(function(m){m.km=v;});
+    renderPricing(true);save();toast('Distance set to '+v+' km for every item.');});
+  $('pCopy').addEventListener('click',function(){var t=quoteText();copyText(t).then(function(ok){
+    if(ok)toast('Quote copied \u2013 paste it into a text, email or invoice.');else{window.prompt('Copy this quote:',t);}});});
+  $('pPrint').addEventListener('click',printQuote);
+  $('btnPricing').addEventListener('click',function(){$('priceCard').scrollIntoView({behavior:'smooth',block:'start'});});
+  window.addEventListener('afterprint',function(){document.body.classList.remove('printQuote');});
+}
+
 /* ---------- picture export ---------- */
 function svgString(r,pxW){
   return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="'+r.vb.map(n2).join(' ')+'" width="'+pxW+'" height="'+Math.round(pxW*r.vb[3]/r.vb[2])+'">'+r.inner+'</svg>';
@@ -890,7 +1139,7 @@ function itemField(id,apply){
     var raw=el.value;if(el.type==='number'){var v=num(raw,NaN);if(!isFinite(v))return;raw=v;}
     if(!el._snap){snapshot();el._snap=true;}
     if(apply(it,raw)===false)return;
-    renderViews();renderStats();renderList();renderEditor();save();
+    renderViews();renderStats();renderList();renderEditor();renderPricing();save();
   }));
   el.addEventListener('blur',function(){el._snap=false;renderEditor();});
 }
@@ -974,7 +1223,8 @@ function init(){
 
   $('btnUndo').addEventListener('click',undo);$('btnRedo').addEventListener('click',redo);
   $('btnPng').addEventListener('click',downloadPicture);
-  $('btnPrint').addEventListener('click',function(){var s=selectedId;selectedId=null;renderLive();setTimeout(function(){window.print();selectedId=s;renderLive();},60);});
+  $('btnPrint').addEventListener('click',function(){document.body.classList.remove('printQuote');var s=selectedId;selectedId=null;renderLive();setTimeout(function(){window.print();selectedId=s;renderLive();},60);});
+  wirePricing();
   $('btnHelp').addEventListener('click',function(){var h=$('helpCard');h.open=true;h.scrollIntoView({behavior:'smooth',block:'start'});});
 
   document.addEventListener('keydown',function(e){
@@ -1008,7 +1258,8 @@ window.VanPlanner={get state(){return state;},get prefs(){return prefs;},get sel
   unionArea:unionArea,unionVolume:unionVolume,ridersOf:ridersOf,
   addItem:function(n,l,w,h){snapshot();var r=addItem(n,l,w,h);renderAll();save();return r&&r.item;},
   select:select,undo:undo,redo:redo,render:renderAll,makePicture:makePicture,saveNow:saveNow,importText:importText,
-  placeOnTop:function(a,b){placeOnTop(getItem(a),getItem(b));},rotate:function(id){rotateItem(getItem(id));},getItem:getItem};
+  placeOnTop:function(a,b){placeOnTop(getItem(a),getItem(b));},rotate:function(id){rotateItem(getItem(id));},getItem:getItem,
+  calcQuote:calcQuote,priceItem:priceItem,quoteNow:quoteNow,quoteText:quoteText,renderQuotePrint:renderQuotePrint,sanitizePricing:sanitizePricing};
 init();
 })();
 </script>
